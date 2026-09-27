@@ -9,10 +9,11 @@ CIDR_A=10.12.1.0/24          # подсеть в зоне A
 CIDR_B=10.12.2.0/24          # подсеть в зоне B
 APP_PORT=8006                # порт, на котором отвечает nginx
 GREETING=cloudlab             # слово из варианта, оно же на странице
-VM_COUNT=3                   # число машин в группе
-DISK_SIZE=20                 # дополнительный диск, ГБ — из варианта
-BOOT_SIZE=10                 # загрузочный диск, ГБ — из варианта
+BOOT_SIZE=10
 IMAGE_FAMILY=ubuntu-2404-lts # образ машин, одинаковый у всех вариантов
+
+VM_COUNT="${1:-3}"
+DISK_SIZE="${2:-20}"
 
 echo "==> сеть и подсети"
 yc vpc network create --name "$PREFIX-net"
