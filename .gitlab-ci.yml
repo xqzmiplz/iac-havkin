@@ -55,3 +55,18 @@ stend-p2:
     - echo "Уборка стенда, префикс $PREFIX"
     - bash work-02/destroy.sh
 
+
+
+yamllint:
+  stage: proverka
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache yamllint
+  script:
+    - yamllint -d relaxed work-02/cloud-init.tpl.yamlyamllint:
+  stage: proverka
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache yamllint
+  script:
+    - yamllint -d relaxed work-02/cloud-init.tpl.yaml
