@@ -5,6 +5,7 @@ default:
 
 stages:
   - proverka
+  - stend
 
 shellcheck:
   stage: proverka
@@ -35,4 +36,22 @@ proverka-dostupa:
   script:
     - echo "Проверяю доступ, вариант 02, слово cloudlab"   # у вас — свои
     - yc vpc network list
+
+stend-p2:
+  extends: .yc
+  stage: stend
+  when: manual
+  variables:
+    PREFIX: havkin-02               # у вас — свой префикс
+    GREETING: cloudlab                 # у вас — своё слово
+    RUNNER_AFTER_SCRIPT_TIMEOUT: 15m
+  script:
+    - echo "Стенд второй работы из пайплайна, вариант 02, префикс $PREFIX, слово $GREETING"
+    - ssh-keygen -t ed25519 -N "" -f ~/.ssh/id_ed25519 -q
+    - bash work-02/create.sh
+    - bash work-02/check-lb.sh
+  after_script:
+    - export PATH=/usr/local/bin:$PATH
+    - echo "Уборка стенда, префикс $PREFIX"
+    - bash work-02/destroy.sh
 
