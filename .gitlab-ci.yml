@@ -5,6 +5,7 @@ default:
 
 stages:
   - proverka
+  - stend
 
 shellcheck:
   stage: proverka
@@ -14,3 +15,43 @@ shellcheck:
     - shellcheck --version
     - find . -name '*.sh' -print
     - find . -name '*.sh' ! -path './work-01/commands.sh' -exec shellcheck {} +
+
+
+.yc:
+  image: alpine:3.20
+  before_script:
+    - apk add --no-cache bash curl jq gettext openssh-keygen >/dev/null
+    - curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash -s -- -a -i /usr/local >/dev/null
+    - export PATH=/usr/local/bin:$PATH
+    - yc config profile create ci
+    - yc config set service-account-key "$YC_KEY_havkin_02"   # у вас — суффикс своего окруже-ния
+    - yc config set cloud-id "$YC_CLOUD_ID"
+    - yc config set folder-id "$YC_FOLDER_ID"
+
+# ручная задача: запускается кнопкой, ресурсов не создаёт
+proverka-dostupa:
+  extends: .yc
+  stage: proverka
+  when: manual
+  script:
+    - echo "Проверяю доступ, вариант 02, слово cloudlab"   # у вас — свои
+    - yc vpc network list
+
+stend-p2:
+  extends: .yc
+  stage: stend
+  when: manual
+  variables:
+    PREFIX: havkin-02               # у вас — свой префикс
+    GREETING: cloudlab                 # у вас — своё слово
+    RUNNER_AFTER_SCRIPT_TIMEOUT: 15m
+  script:
+    - echo "Стенд второй работы из пайплайна, вариант 02, префикс $PREFIX, слово $GREETING"
+    - ssh-keygen -t ed25519 -N "" -f ~/.ssh/id_ed25519 -q
+    - bash work-02/create.sh
+    - bash work-02/check-lb.sh
+  after_script:
+    - export PATH=/usr/local/bin:$PATH
+    - echo "Уборка стенда, префикс $PREFIX"
+    - bash work-02/destroy.sh
+
