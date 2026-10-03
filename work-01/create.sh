@@ -5,8 +5,6 @@ PREFIX="havkin-02"
 ZONE="ru-central1-b"
 CIDR="10.12.1.0/24"
 DISK_SIZE=20                      # ГБ
-PORT=8006                         # порт сервиса
-WORD="cloudlab"                   # слово на странице
 IMAGE_FAMILY="ubuntu-2204-lts"    # дистрибутив самостоятельной части
 
 SSH_KEY="$HOME/.ssh/id_ed25519.pub"

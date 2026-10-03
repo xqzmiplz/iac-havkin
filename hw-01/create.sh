@@ -71,6 +71,10 @@ yc vpc subnet update --name "$PREFIX-subnet-a" --route-table-name "$PREFIX-rt" >
 echo "==> файл настройки из шаблона"
 SSH_KEY=$(cat ~/.ssh/id_ed25519.pub)
 export APP_PORT GREETING SSH_KEY
+
+# envsubst принимает имена переменных буквально: раскрой мы их заранее,
+# подставлять было бы нечего. Одинарные кавычки здесь верны.
+# shellcheck disable=SC2016
 envsubst '${APP_PORT} ${GREETING} ${SSH_KEY}' \
   < hw-01/cloud-init.tpl.yaml > hw-01/cloud-init.yaml
 
@@ -113,14 +117,16 @@ echo "==> целевая группа"
 if yc load-balancer target-group get --name "$PREFIX-tg" >/dev/null 2>&1; then
   echo "  $PREFIX-tg уже есть, пропускаю"
 else
-  TARGETS=""
+  TARGETS=()
   for i in $(seq 1 "$WEB_COUNT"); do
     idx=$(( (i - 1) % 2 ))
-    IP=$(yc compute instance get --name "$PREFIX-web-$i" --format json \
+    IP=$(yc compute instance get "$PREFIX-web-$i" --format json \
       | jq -r '.network_interfaces[0].primary_v4_address.address')
-    TARGETS="$TARGETS --target subnet-name=${SUBNETS[$idx]},address=$IP"
+    TARGETS+=(--target "subnet-name=${SUBNETS[$idx]},address=$IP")
   done
-  yc load-balancer target-group create --name "$PREFIX-tg" $TARGETS
+
+
+  yc load-balancer target-group create --name "$PREFIX-tg" "${TARGETS[@]}"
 fi
 
 echo "==> балансировщик"

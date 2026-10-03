@@ -26,7 +26,7 @@ fi
 if [ -n "$LB_IP" ]; then
   TOTAL_WEB=$(yc compute instance list --format json | jq -r --arg p "$PREFIX-web" '[.[] | select(.name | startswith($p))] | length')
 
-  RESPONDERS=$(for i in $(seq 1 20); do
+  RESPONDERS=$(for _ in $(seq 1 20); do
     curl -s --max-time 3 "http://$LB_IP" | grep -o 'on [a-z0-9-]*' | sed 's/on //'
   done | sort -u)
   COUNT=$(echo "$RESPONDERS" | grep -c .)
